@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+
+drill @127.0.0.1 -p 8053 cloudflare.com -Q || exit 1
+
+exit 0

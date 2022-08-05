@@ -1,0 +1,12 @@
+#!/usr/bin/with-contenv bash
+
+mkdir -p /config/stubby
+
+[ ! -f /config/stubby/stubby.yml ] && \
+    cp /defaults/stubby.yml /config/stubby/stubby.yml
+
+# permissions
+chown -R abc:abc \
+    /config/stubby
+
+echo "*** $(stubby -V) ready!"

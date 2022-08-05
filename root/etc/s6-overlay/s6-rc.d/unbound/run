@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash
+
+s6-svwait -U /var/run/service/stubby
+
+cmd="unbound -d -p -c /config/unbound/unbound.conf"
+echo "*** executing => $cmd"
+exec s6-notifyoncheck -d -n 0 -s 3000 \
+    $cmd

@@ -1,0 +1,9 @@
+#!/usr/bin/with-contenv bash
+
+mkdir -p /config/adguardhome
+
+# permissions
+chown -R abc:abc \
+    /config/adguardhome
+
+echo "*** AdGuardHome $(AdGuardHome --version | awk '{print $NF}') ready!"

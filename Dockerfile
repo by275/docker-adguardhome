@@ -24,6 +24,7 @@ RUN \
     echo "**** install build-deps ****" && \
     apt-get update -qq && \
     apt-get install -yqq --no-install-recommends \
+        bison \
         build-essential \
         ca-certificates \
         curl \
@@ -193,6 +194,8 @@ RUN \
 # RELEASE
 # 
 FROM base
+LABEL maintainer="by275"
+LABEL org.opencontainers.image.source https://github.com/by275/docker-adguardhome
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -230,6 +233,9 @@ ENV \
 EXPOSE 53/tcp
 EXPOSE 53/udp
 
-HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 CMD drill @127.0.0.1 cloudflare.com || exit 1
+VOLUME /config
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
+    CMD drill @127.0.0.1 cloudflare.com || exit 1
 
 ENTRYPOINT ["/init"]

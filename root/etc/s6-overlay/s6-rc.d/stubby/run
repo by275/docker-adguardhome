@@ -2,6 +2,6 @@
 
 cmd="stubby -C /config/stubby/stubby.yml"
 cmd="$cmd${STUBBY_LOG_LEVEL+ -v $STUBBY_LOG_LEVEL}"
-echo "*** DNS-over-TLS => $cmd"
+echo "*** executing => $cmd"
 exec s6-notifyoncheck -d -n 0 -s 3000 \
     s6-setuidgid abc $cmd

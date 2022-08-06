@@ -23,8 +23,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN \
     echo "**** install build-deps ****" && \
     apt-get update -qq && \
+    apt-get upgrade -qq && \
     apt-get install -yqq --no-install-recommends \
-        bison \
         build-essential \
         ca-certificates \
         curl \
@@ -66,16 +66,16 @@ RUN \
 RUN \
     echo "**** install build-deps ****" && \
     apt-get install -yqq --no-install-recommends \
+        bison \
+        flex \
         libevent-dev \
         libexpat-dev \
-        libnghttp2-dev \
-        libprotobuf-c-dev \
-        protobuf-c-compiler
+        libnghttp2-dev
 COPY --from=openssl /openssl /
 RUN \
     echo "**** build unbound v${UNBOUND_VER} ****" && \
     ./configure \
-        --enable-dnstap \
+        --disable-debug \
         --enable-event-api \
         --enable-subnet \
         --enable-tfo-client \
@@ -114,6 +114,7 @@ RUN \
 RUN \
     echo "**** build stubby ****" && \
     cmake \
+        -DCMAKE_BUILD_TYPE=Release \
         -DBUILD_GETDNS_QUERY=OFF \
         -DBUILD_GETDNS_SERVER_MON=OFF \
         -DBUILD_LIBEV=OFF \
@@ -209,13 +210,9 @@ RUN \
         libevent-2.1-7 \
         libexpat1 \
         libnghttp2-14 \
-        libprotobuf-c1 \
         `# stubby` \
         libyaml-0-2 \
     && \
-    echo "**** useradd unbound ****" && \
-    groupadd unbound && \
-    useradd -g unbound -s /usr/sbin/nologin -d /dev/null unbound && \
     echo "**** cleanup ****" && \
     rm -rf \
         /tmp/* \

@@ -1,8 +1,10 @@
 #!/usr/bin/with-contenv bash
 
-s6-svwait -U /var/run/service/stubby
+if [ "${STUBBY_ENABLED}" -eq 1 ]; then
+    s6-svwait -U /var/run/service/stubby
+fi
 
-cmd="unbound -d -p -c /config/unbound/unbound.conf"
+cmd="unbound -d -p -c ${UNBOUND_CONFIG}"
 echo "*** executing => $cmd"
-exec s6-notifyoncheck -d -n 0 -s 3000 \
+exec s6-notifyoncheck -d -n 0 -s 1000 \
     $cmd

@@ -1,12 +1,24 @@
 #!/usr/bin/with-contenv bash
 
-mkdir -p /config/stubby
+if [ "${STUBBY_ENABLED}" -ne 1 ]; then
+    rm -f /var/run/service/stubby/notification-fd
+    exit 0
+fi
 
-[ ! -f /config/stubby/stubby.yml ] && \
-    cp /defaults/stubby.yml /config/stubby/stubby.yml
+mkdir -p /var/cache/stubby
+
+rm -f "${STUBBY_CONFIG}"
+envsubst < "/defaults/stubby.yml" > "${STUBBY_CONFIG}"
+
+echo "*** Stubby upstreams: $STUBBY_UPSTREAMS"
+IFS=" " read -r -a upstreams <<< "$STUBBY_UPSTREAMS"
+for upstream in "${upstreams[@]}"; do
+    echo "  - address_data: $(echo $upstream | cut -d# -f1)" >> "${STUBBY_CONFIG}"
+    echo "    tls_auth_name: \"$(echo $upstream | cut -d# -f2)\"" >> "${STUBBY_CONFIG}"
+done
 
 # permissions
 chown -R abc:abc \
-    /config/stubby
+    /var/cache/stubby
 
 echo "*** $(stubby -V) ready!"

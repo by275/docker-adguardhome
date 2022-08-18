@@ -41,6 +41,30 @@ jobs:
         if: env.X_SKIP == 'false'
         uses: docker/setup-buildx-action@v2
       -
+        name: Build stubby and unbound
+        if: env.X_SKIP == 'false'
+        run: |
+          docker buildx build \
+            -f stubby.dockerfile \
+            --build-arg ARCH=amd64 \
+            --output=type=tar,dest=stubby-amd64.tar.gz \
+            .
+          docker buildx build \
+            -f stubby.dockerfile \
+            --build-arg ARCH=arm64 \
+            --output=type=tar,dest=stubby-arm64.tar.gz \
+            .
+          docker buildx build \
+            -f unbound.dockerfile \
+            --build-arg ARCH=amd64 \
+            --output=type=tar,dest=unbound-amd64.tar.gz \
+            .
+          docker buildx build \
+            -f unbound.dockerfile \
+            --build-arg ARCH=arm64 \
+            --output=type=tar,dest=unbound-arm64.tar.gz \
+            .
+      -
         name: Initial Buildx
         if: env.X_SKIP == 'false'
         uses: docker/build-push-action@v3

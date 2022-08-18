@@ -1,7 +1,13 @@
 #!/usr/bin/with-contenv bash
 
-cmd="stubby -C /config/stubby/stubby.yml"
-cmd="$cmd${STUBBY_LOG_LEVEL+ -v $STUBBY_LOG_LEVEL}"
+if [ "${STUBBY_ENABLED}" -ne 1 ]; then
+    s6-svc -d .
+    exit 0
+fi
+
+IFS=" " read -r -a stubby_opts <<< "$STUBBY_OPTS"
+
+cmd="stubby -C ${STUBBY_CONFIG} ${stubby_opts[@]}"
 echo "*** executing => $cmd"
-exec s6-notifyoncheck -d -n 0 -s 3000 \
+exec s6-notifyoncheck -d -n 0 -s 2000 \
     s6-setuidgid abc $cmd

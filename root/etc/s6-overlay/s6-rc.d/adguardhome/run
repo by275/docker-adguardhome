@@ -1,7 +1,12 @@
 #!/usr/bin/with-contenv bash
 
+if [ "${AGH_ENABLED}" -ne 1 ]; then
+    s6-svc -d .
+    exit 0
+fi
+
 s6-svwait -U /var/run/service/unbound
 
-cmd="AdGuardHome --work-dir /config/adguardhome --host 0.0.0.0"
+cmd="AdGuardHome --work-dir /config --host 0.0.0.0"
 echo "*** executing => $cmd"
 exec $cmd

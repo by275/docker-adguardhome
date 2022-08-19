@@ -69,6 +69,7 @@ RUN \
         ca-certificates \
         gettext-base \
         ldnsutils \
+        net-tools \
         `# unbound` \
         libevent-2.1-7 \
         libexpat1 \
@@ -95,15 +96,18 @@ ENV \
     STUBBY_EDNS_CLIENT_SUBNET_PRIVATE=1 \
     STUBBY_IDLE_TIMEOUT=10000 \
     STUBBY_PORT=8053 \
-    STUBBY_UPSTREAMS="1.1.1.1#cloudflare-dns.com" \
+    STUBBY_UPSTREAMS="1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com" \
     UNBOUND_CONFIG=/usr/local/etc/unbound/unbound.conf \
     UNBOUND_VERBOSITY=0 \
-    UNBOUND_UPSTREAMS="1.1.1.1@853#cloudflare-dns.com" \
+    UNBOUND_UPSTREAMS="1.1.1.1@853#cloudflare-dns.com 1.0.0.1@853#cloudflare-dns.com" \
     AGH_ENABLED=1
 
 EXPOSE 53/tcp
 EXPOSE 53/udp
 
 VOLUME /config
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
+    CMD /usr/local/bin/healthcheck
 
 ENTRYPOINT ["/init"]

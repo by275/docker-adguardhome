@@ -109,7 +109,8 @@ RUN \
     make DESTDIR=/unbound install
 RUN \
     echo "**** cleanup unbound ****" && \
-    mv /unbound/usr/local/etc/unbound/unbound.conf /unbound/usr/local/etc/unbound/unbound.conf.example && \
+    mv /unbound/usr/local/etc/unbound/unbound.conf \
+        /unbound/usr/local/etc/unbound/unbound.conf.example && \
     rm -rf \
         /unbound/usr/local/include \
         /unbound/usr/local/share

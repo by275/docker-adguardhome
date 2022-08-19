@@ -81,7 +81,8 @@ RUN \
     make DESTDIR=/stubby install
 RUN \
     echo "**** cleanup stubby ****" && \
-    mv /stubby/usr/local/etc/stubby/stubby.yml /stubby/usr/local/etc/stubby/stubby.yml.example && \
+    mv /stubby/usr/local/etc/stubby/stubby.yml \
+        /stubby/usr/local/etc/stubby/stubby.yml.example && \
     rm -rf \
         /stubby/usr/local/include \
         /stubby/usr/local/share \

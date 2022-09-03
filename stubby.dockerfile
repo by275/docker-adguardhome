@@ -5,7 +5,7 @@ ARG ARCH=amd64
 
 ENV \
     ARCH=${ARCH} \
-    GETDNS_TAG=v1.7.1-rc.1 \
+    GETDNS_TAG=v1.7.2 \
     DEBIAN_FRONTEND=noninteractive
 
 # 

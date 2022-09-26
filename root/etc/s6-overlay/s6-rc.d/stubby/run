@@ -5,9 +5,7 @@ if [ "${STUBBY_ENABLED}" -ne 1 ]; then
     exit 0
 fi
 
-IFS=" " read -r -a stubby_opts <<< "$STUBBY_OPTS"
-
-cmd="stubby -C ${STUBBY_CONFIG} ${stubby_opts[@]}"
+cmd="stubby -C ${STUBBY_CONFIG} $STUBBY_OPTS"
 echo "*** executing => $cmd"
 exec s6-notifyoncheck -d -n 0 -s 2000 \
     s6-setuidgid abc $cmd

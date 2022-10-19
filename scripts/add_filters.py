@@ -1,4 +1,3 @@
-# https://pastebin.com/i1d4xNAY
 import sys
 import logging
 from getpass import getpass
@@ -6,6 +5,8 @@ from getpass import getpass
 import requests
 
 logger = logging.getLogger()
+logger.addHandler(logging.StreamHandler())
+logger.setLevel("INFO")
 
 
 if sys.version_info[:2] < (3, 6):
@@ -30,16 +31,15 @@ try:
 except Exception as e:
     logger.exception("Exception attempting login to '%s'", host)
     sys.exit(1)
-print("Login Successful!")
+logger.info("\nLogin Successful!\n")
 
 #
 # LISTUP URLS
 #
 
-# https://discourse.pi-hole.net/t/update-the-best-blocking-lists-for-the-pi-hole-alternative-dns-servers-2019/13620
 burls = [
     # StevenBlack
-    # from pi-hole basics - https://github.com/pi-hole/pi-hole/blob/cbfb58f7a283c2a3e7aad95a834a0287175ccb24/automated%20install/basic-install.sh#L1306
+    # from pi-hole basics - https://github.com/pi-hole/pi-hole/blob/e773e3302ca66a6d918a40c8a8c6282f223d4906/automated%20install/basic-install.sh#L1217
     "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
     # phishing.army
     "https://phishing.army/download/phishing_army_blocklist.txt",
@@ -52,40 +52,41 @@ try:
     for url in list(requests.get(burls_more, timeout=10).text.splitlines()):
         if url:
             burls.append(url)
-    print(f"{len(burls):d} blocklists ready!")
+    logger.info("%d blocklists ready!", len(burls))
 except Exception as e:
     logger.exception("Exception while getting blocklist urls from '%s'", burls_more)
     sys.exit(1)
 
 aurls = [
     "https://raw.githubusercontent.com/anudeepND/whitelist/master/domains/whitelist.txt",
+    "https://raw.githubusercontent.com/hl2guide/AdGuard-Home-Whitelist/main/whitelist.txt",
 ]
-print(f"{len(aurls):d} allowlists ready!")
+logger.info("%d allowlists ready!", len(aurls))
 
 #
 # ADD FILTERS
 #
 
-print("Adding filter urls - blocklist")
+logger.info("\nAdding filter urls - blocklist")
 for i, url in enumerate(burls):
     log_prefix = f"[{i+1:03d}/{len(burls):03d}]"
     try:
-        x = s.post(host + "/control/filtering/add_url", json={"url": url, "name": url, "whitelist": False})
-        # x.raise_for_status()
-        log_body = x.text.replace("--", "").replace(url, "").strip()
-        # print('{} {} -- {}'.format(log_prefix, log_body, url))
-    except Exception as e:
-        log_body = f"ERROR: {str(e).strip()}"
-    print(f"{log_prefix} {url} -- {log_body}")
+        params = {"url": url, "name": url, "whitelist": False}
+        x = s.post(host + "/control/filtering/add_url", json=params)
+        x.raise_for_status()
+    except Exception:
+        logger.exception("%s %s -- Exception while adding url to blocklist:", log_prefix, url)
+    else:
+        logger.info("%s %s -- %s", log_prefix, url, x.text.replace("--", "").replace(url, "").strip())
 
-print("Adding filter urls - allowlist")
+logger.info("\nAdding filter urls - allowlist")
 for i, url in enumerate(aurls):
     log_prefix = f"[{i+1:03d}/{len(aurls):03d}]"
     try:
-        x = s.post(host + "/control/filtering/add_url", json={"url": url, "name": url, "whitelist": True})
-        # x.raise_for_status()
-        log_body = x.text.replace("--", "").replace(url, "").strip()
-        # print('{} {} -- {}'.format(log_prefix, log_body, url))
-    except Exception as e:
-        log_body = f"ERROR: {str(e).strip()}"
-    print(f"{log_prefix} {url} -- {log_body}")
+        params = {"url": url, "name": url, "whitelist": True}
+        x = s.post(host + "/control/filtering/add_url", json=params)
+        x.raise_for_status()
+    except Exception:
+        logger.exception("%s %s -- Exception while adding url to allowlist:", log_prefix, url)
+    else:
+        logger.info("%s %s -- %s", log_prefix, url, x.text.replace("--", "").replace(url, "").strip())

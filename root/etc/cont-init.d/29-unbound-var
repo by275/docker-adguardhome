@@ -1,5 +1,10 @@
 #!/usr/bin/with-contenv bash
 
+if [ "${UNBOUND_ENABLED}" -ne 1 ]; then
+    rm -f /var/run/service/unbound/notification-fd
+    exit 0
+fi
+
 reserved=12582912
 availableMemory=$((1024 * $( (grep MemAvailable /proc/meminfo || grep MemTotal /proc/meminfo) | sed 's/[^0-9]//g' ) ))
 memoryLimit=$availableMemory

@@ -100,11 +100,13 @@ ENV \
     STUBBY_IDLE_TIMEOUT=10000 \
     STUBBY_PORT=8053 \
     STUBBY_UPSTREAMS="1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com" \
+    UNBOUND_ENABLED=1 \
     UNBOUND_CONFIG=/usr/local/etc/unbound/unbound.conf \
     UNBOUND_VERBOSITY=0 \
     UNBOUND_UPSTREAMS="1.1.1.1@853#cloudflare-dns.com 1.0.0.1@853#cloudflare-dns.com" \
     AGH_ENABLED=1
 
+EXPOSE 80
 EXPOSE 53/tcp
 EXPOSE 53/udp
 

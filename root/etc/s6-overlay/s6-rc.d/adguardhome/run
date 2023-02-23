@@ -5,7 +5,9 @@ if [ "${AGH_ENABLED}" -ne 1 ]; then
     exit 0
 fi
 
-s6-svwait -U /var/run/service/unbound
+if [ "${UNBOUND_ENABLED}" -eq 1 ]; then
+    s6-svwait -U /var/run/service/unbound
+fi
 
 cmd="AdGuardHome --work-dir /config --host 0.0.0.0"
 echo "*** executing => $cmd"

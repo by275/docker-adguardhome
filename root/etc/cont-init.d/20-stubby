@@ -1,6 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-if [ "${STUBBY_ENABLED}" -ne 1 ]; then
+if [ "${STUBBY_ENABLED}" -ne 1 ] || [ "${UNBOUND_ENABLED}" -ne 1 ]; then
     rm -f /var/run/service/stubby/notification-fd
     exit 0
 fi

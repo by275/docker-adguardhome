@@ -1,5 +1,10 @@
 #!/usr/bin/with-contenv bash
 
+if [ "${UNBOUND_ENABLED}" -ne 1 ]; then
+    rm -f /var/run/service/unbound/notification-fd
+    exit 0
+fi
+
 mkdir -p /config/unbound.conf.d
 
 for srcfile in /defaults/unbound.conf.d/*; do

@@ -1,5 +1,10 @@
 #!/usr/bin/with-contenv bash
 
+if [ "${UNBOUND_ENABLED}" -ne 1 ]; then
+    s6-svc -d .
+    exit 0
+fi
+
 if [ "${STUBBY_ENABLED}" -eq 1 ]; then
     s6-svwait -U /var/run/service/stubby
 fi

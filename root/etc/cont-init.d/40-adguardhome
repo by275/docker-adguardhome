@@ -1,5 +1,10 @@
 #!/usr/bin/with-contenv bash
 
+if [ "${UNBOUND_ENABLED}" -ne 1 ] && [ "${AGH_ENABLED}" -ne 1 ]; then
+    echo "ERROR: At least one of unbound or adguardhome should be enabled."
+    exit 1
+fi
+
 if [ "${AGH_ENABLED}" -ne 1 ]; then
     exit 0
 fi

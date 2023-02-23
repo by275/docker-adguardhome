@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # check unbound
-[ "${AGH_ENABLED}" -eq 1 ] && UNBOUND_PORT=5053 || UNBOUND_PORT=53
-drill @127.0.0.1 -p ${UNBOUND_PORT} cloudflare.com | grep -q NOERROR || exit 1
+if [ "${UNBOUND_ENABLED}" -eq 1 ]; then
+    [ "${AGH_ENABLED}" -eq 1 ] && UNBOUND_PORT=5053 || UNBOUND_PORT=53
+    drill @127.0.0.1 -p ${UNBOUND_PORT} cloudflare.com | grep -q NOERROR || exit 1
+fi
 
 # check adguardhome
 if [ "${AGH_ENABLED}" -eq 1 ]; then

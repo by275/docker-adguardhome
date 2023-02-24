@@ -90,7 +90,7 @@ jobs:
             --load \
             .
           CID=$(docker run -d ${{ env.IMAGE_NAME }}:testing)
-          VER=$(docker exec $CID AdGuardHome --version | awk '{print $NF}' | tr -d 'v')
+          VER=$(docker exec $CID AdGuardHome --version | awk '{print $NF}' | cut -d'+' -f1)
           docker rm -f $CID
           echo "APP_VER=$VER" >> $GITHUB_ENV
       -

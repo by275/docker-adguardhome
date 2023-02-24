@@ -18,10 +18,18 @@ rm -f "${UNBOUND_CONFIG}"
 envsubst < "/defaults/unbound.conf" > "${UNBOUND_CONFIG}"
 
 if [ "${STUBBY_ENABLED}" -eq 1 ]; then
-    echo "    forward-addr: 127.0.0.1@${STUBBY_PORT}" >> "${UNBOUND_CONFIG}"
-else
+    cat <<EOT >> "${UNBOUND_CONFIG}"
+forward-zone:
+    name: "."
+    forward-addr: 127.0.0.1@${STUBBY_PORT}
+EOT
+elif [ -n "${UNBOUND_UPSTREAMS:-}" ]; then
     echo "*** unbound upstreams: $UNBOUND_UPSTREAMS"
-    echo "    forward-tls-upstream: yes" >> "${UNBOUND_CONFIG}"
+    cat <<EOT >> "${UNBOUND_CONFIG}"
+forward-zone:
+    name: "."
+    forward-tls-upstream: yes
+EOT
     IFS=" " read -r -a upstreams <<< "$UNBOUND_UPSTREAMS"
     for upstream in "${upstreams[@]}"; do
         echo "    forward-addr: $upstream" >> "${UNBOUND_CONFIG}"

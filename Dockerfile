@@ -1,8 +1,9 @@
 ARG UBUNTU_VER=22.04
+ARG AGH_BUILD
 
 FROM ghcr.io/by275/base:ubuntu${UBUNTU_VER} AS base
 FROM ghcr.io/by275/base:ubuntu AS prebuilt
-FROM adguard/adguardhome:latest AS adguardhome
+FROM adguard/adguardhome:${AGH_BUILD} AS adguardhome
 
 # 
 # COLLECT

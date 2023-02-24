@@ -14,14 +14,18 @@ env:
 jobs:
   buildx:
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [latest, beta, edge]
     steps:
       -
         name: Check if buildx required
         run: |
           if [ $GITHUB_EVENT_NAME = "schedule" ]; then
-            docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc adguard/adguardhome \
+            docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc adguard/adguardhome:${{ matrix.build }} \
               /opt/adguardhome/AdGuardHome /abc/agh1
-            docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc ${{ env.IMAGE_NAME }}:latest \
+            docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
               /usr/local/bin/AdGuardHome /abc/agh2
             if cmp -s agh1 agh2 ; then X_SKIP=true ; else X_SKIP=false ; fi
           else
@@ -73,6 +77,8 @@ jobs:
           file: Dockerfile
           tags: ${{ env.IMAGE_NAME }}:testing
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            AGH_BUILD=${{ matrix.build }}
       -
         name: Load Built Image and Get Variables
         if: env.X_SKIP == 'false'
@@ -80,6 +86,7 @@ jobs:
           docker buildx build \
             -t ${{ env.IMAGE_NAME }}:testing \
             --platform=linux/amd64 \
+            --build-arg AGH_BUILD=${{ matrix.build }} \
             --load \
             .
           CID=$(docker run -d ${{ env.IMAGE_NAME }}:testing)
@@ -102,9 +109,11 @@ jobs:
           context: .
           file: Dockerfile
           tags: |
-            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ matrix.build }}
             ${{ env.IMAGE_NAME }}:${{ env.APP_VER }}
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            AGH_BUILD=${{ matrix.build }}
           push: true
       -
         name: Notification
@@ -114,5 +123,5 @@ jobs:
           webhook: ${{ secrets.DISCORD_WEBHOOK }}
           status: ${{ job.status }}
           description: |
-            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ matrix.build }}
             ${{ env.IMAGE_NAME }}:${{ env.APP_VER }}

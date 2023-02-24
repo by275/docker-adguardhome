@@ -93,14 +93,14 @@ COPY --from=collector /bar/ /
 ENV \
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
     TZ=Asia/Seoul \
-    STUBBY_ENABLED=1 \
+    STUBBY_ENABLED=0 \
     STUBBY_CONFIG=/usr/local/etc/stubby/stubby.yml \
     STUBBY_LOG_LEVEL=GETDNS_LOG_NOTICE \
     STUBBY_EDNS_CLIENT_SUBNET_PRIVATE=1 \
-    STUBBY_IDLE_TIMEOUT=10000 \
+    STUBBY_IDLE_TIMEOUT=9000 \
     STUBBY_PORT=8053 \
     STUBBY_UPSTREAMS="1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com" \
-    UNBOUND_ENABLED=1 \
+    UNBOUND_ENABLED=0 \
     UNBOUND_CONFIG=/usr/local/etc/unbound/unbound.conf \
     UNBOUND_VERBOSITY=0 \
     UNBOUND_UPSTREAMS="1.1.1.1@853#cloudflare-dns.com 1.0.0.1@853#cloudflare-dns.com" \

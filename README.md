@@ -80,59 +80,120 @@ Unbound#53 -> Stubby#8053 -> ${STUBBY_UPSTREAMS}
 
 ## Benchmark
 
-### Adguardhome ONLY
-
-Upstreams(with Parallel requests):
-
-- <tls://1dot1dot1dot1.cloudflare-dns.com>
-- <https://cloudflare-dns.com/dns-query>
-
-Cache: 4194304 bytes
-
-|                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
-|  ----------------|-------|-------|-------|-------|-------|
-|    Cached Name   | 0.001 | 0.001 | 0.003 | 0.000 |  93.2 |
-|    Uncached Name | 0.001 | 0.076 | 0.238 | 0.061 |  87.8 |
-|    DotCom Lookup | 0.007 | 0.092 | 0.199 | 0.072 |  83.3 |
-
 ### Adguardhome + Unbound
 
 ```log
 Adguardhome#53 -> Unbound#5053 -> ${UNBOUND_UPSTREAMS}
 ```
 
-Upstreams:
+Adguardhome Upstreams:
 
-- 1.1.1.1@853#cloudflare-dns.com
-- 1.0.0.1@853#cloudflare-dns.com
+- Unbound#5053
+
+  Unbound Upstreams:
+
+  - 1.1.1.1@853#cloudflare-dns.com
+  - 1.0.0.1@853#cloudflare-dns.com
+
+    Adguardhome Cache: 4194304 bytes
+
+    |                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
+    |  ----------------|-------|-------|-------|-------|-------|
+    |    Cached Name   | 0.003 | 0.003 | 0.005 | 0.001 | 100.0 |
+    |    Uncached Name | 0.003 | 0.089 | 0.213 | 0.075 | 100.0 |
+    |    DotCom Lookup | 0.005 | 0.100 | 0.195 | 0.081 | 100.0 |
+
+    Adguardhome Cache: Off
+
+    |                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
+    |  ----------------|-------|-------|-------|-------|-------|
+    |    Cached Name   | 0.003 | 0.005 | 0.007 | 0.001 | 100.0 |
+    |    Uncached Name | 0.003 | 0.095 | 0.325 | 0.081 | 100.0 |
+    |    DotCom Lookup | 0.005 | 0.104 | 0.272 | 0.087 | 100.0 |
+
+  Unbound Upstreams:
+  
+  - None (as a local recursive resolver)
+
+    Adguardhome Cache: 4194304 bytes
+
+    |                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
+    |  ----------------|-------|-------|-------|-------|-------|
+    |    Cached Name   | 0.003 | 0.003 | 0.005 | 0.000 | 100.0 |
+    |    Uncached Name | 0.004 | 0.075 | 0.264 | 0.079 | 100.0 |
+    |    DotCom Lookup | 0.005 | 0.063 | 0.197 | 0.073 | 100.0 |
+
+    Adguardhome Cache: Off
+
+    |                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
+    |  ----------------|-------|-------|-------|-------|-------|
+    |    Cached Name   | 0.003 | 0.005 | 0.008 | 0.001 | 100.0 |
+    |    Uncached Name | 0.003 | 0.084 | 0.237 | 0.077 | 100.0 |
+    |    DotCom Lookup | 0.006 | 0.103 | 0.266 | 0.082 | 100.0 |
+
+> Cache should be better turned on even if one of upstreams has it.
+
+> Unbound running as a local recursive resolver has an advantage for uncached/dotcom lookup.
+
+Adguardhome Upstreams:
+
+- 127.0.0.1:5053
+- <tls://1dot1dot1dot1.cloudflare-dns.com>
+- <https://cloudflare-dns.com/dns-query>
+
+  Unbound Upstreams:
+
+  - 1.1.1.1@853#cloudflare-dns.com
+  - 1.0.0.1@853#cloudflare-dns.com
+
+    |                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
+    |  ----------------|-------|-------|-------|-------|-------|
+    |    Cached Name   | 0.003 | 0.003 | 0.005 | 0.000 | 100.0 |
+    |    Uncached Name | 0.004 | 0.090 | 0.261 | 0.075 | 100.0 |
+    |    DotCom Lookup | 0.005 | 0.077 | 0.248 | 0.078 | 100.0 |
+
+  Unbound Upstreams:
+  
+  - None (as a local recursive resolver)
+
+    |                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
+    |  ----------------|-------|-------|-------|-------|-------|
+    |    Cached Name   | 0.003 | 0.004 | 0.007 | 0.001 | 100.0 |
+    |    Uncached Name | 0.003 | 0.083 | 0.254 | 0.070 | 100.0 |
+    |    DotCom Lookup | 0.006 | 0.063 | 0.189 | 0.063 | 100.0 |
+
+> Using unbound along with other public DNS as Adguardhome upstreams is recommended.
+
+### Adguardhome w/ or w/o Stubby
+
+#### Adguardhome ONLY
+
+Adguard Upstreams:
+
+- <tls://1dot1dot1dot1.cloudflare-dns.com>
+- <https://cloudflare-dns.com/dns-query>
 
 |                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
 |  ----------------|-------|-------|-------|-------|-------|
-|    Cached Name   | 0.001 | 0.001 | 0.002 | 0.000 |  90.9 |
-|    Uncached Name | 0.001 | 0.078 | 0.236 | 0.063 |  85.0 |
-|    DotCom Lookup | 0.008 | 0.059 | 0.191 | 0.056 |  79.4 |
+|    Cached Name   | 0.003 | 0.004 | 0.006 | 0.001 | 100.0 |
+|    Uncached Name | 0.003 | 0.096 | 0.277 | 0.079 | 100.0 |
+|    DotCom Lookup | 0.005 | 0.125 | 0.280 | 0.085 | 100.0 |
 
-Upstreams: None
-
-|                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
-|  ----------------|-------|-------|-------|-------|-------|
-|    Cached Name   | 0.001 | 0.001 | 0.002 | 0.000 |  91.1 |
-|    Uncached Name | 0.001 | 0.074 | 0.238 | 0.050 |  95.1 |
-|    DotCom Lookup | 0.007 | 0.053 | 0.200 | 0.065 |  79.5 |
-
-### Adguardhome + Unbound + Stubby
+### Adguardhome + Stubby
 
 ```log
-Adguardhome#53 -> Unbound#5053 -> Stubby#8053 -> ${STUBBY_UPSTREAMS}
+Adguardhome#53 -> Stubby#8053 -> ${STUBBY_UPSTREAMS}
 ```
 
-Upstreams:
+Stubby Upstreams:
 
 - 1.1.1.1#cloudflare-dns.com
 - 1.0.0.1#cloudflare-dns.com
 
 |                  |  Min  |  Avg  |  Max  |Std.Dev|Reliab%|
 |  ----------------|-------|-------|-------|-------|-------|
-|    Cached Name   | 0.001 | 0.001 | 0.002 | 0.000 |  85.4 |
-|    Uncached Name | 0.001 | 0.082 | 0.253 | 0.063 |  88.6 |
-|    DotCom Lookup | 0.008 | 0.063 | 0.193 | 0.062 |  83.9 |
+|    Cached Name   | 0.003 | 0.004 | 0.006 | 0.001 | 100.0 |
+|    Uncached Name | 0.003 | 0.128 | 0.374 | 0.100 | 100.0 |
+|    DotCom Lookup | 0.017 | 0.221 | 0.429 | 0.125 | 100.0 |
+
+>> There's no reason to use Stubby as an additional TLS forwarder.

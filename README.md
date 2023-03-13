@@ -3,7 +3,7 @@
 ## Flow of DNS query requests
 
 ```log
-Adguardhome -> Unbound -> Stubby
+Adguardhome -> Unbound
 ```
 
 ## Possible combinations
@@ -29,7 +29,6 @@ This is a default mode.
 ```log
 AGH_ENABLED=1
 UNBOUND_ENABLED=1
-STUBBY=0
 ```
 
 ```log
@@ -40,42 +39,15 @@ where `UNBOUND_UPSTREAMS` is `1.1.1.1@853#cloudflare-dns.com 1.0.0.1@853#cloudfl
 
 If `UNBOUND_UPSTREAMS` is unset, unbound will not forward queries and run as a local recursive resolver.
 
-### Adguardhome + Unbound + Stubby
-
-```log
-AGH_ENABLED=1
-UNBOUND_ENABLED=1
-STUBBY=1
-```
-
-```log
-Adguardhome#53 -> Unbound#5053 -> Stubby#8053 -> ${STUBBY_UPSTREAMS}
-```
-
-where `STUBBY_UPSTREAMS` is a list of tls upstreams (space-separated), e.g. `1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com`.
-
 ### Unbound ONLY
 
 ```log
 AGH_ENABLED=0
 UNBOUND_ENABLED=1
-STUBBY=0
 ```
 
 ```log
 Unbound#53 -> ${UNBOUND_UPSTREAMS}
-```
-
-### Unbound + Stubby
-
-```log
-AGH_ENABLED=0
-UNBOUND_ENABLED=1
-STUBBY=1
-```
-
-```log
-Unbound#53 -> Stubby#8053 -> ${STUBBY_UPSTREAMS}
 ```
 
 ## Benchmark

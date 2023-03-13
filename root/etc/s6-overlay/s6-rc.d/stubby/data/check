@@ -1,5 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-drill @127.0.0.1 -p ${STUBBY_PORT} cloudflare.com | grep -q NOERROR || exit 1
-
-exit 0

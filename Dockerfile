@@ -19,9 +19,6 @@ ADD https://raw.githubusercontent.com/by275/docker-base/main/_/etc/cont-init.d/a
 # add unbound
 ADD unbound-${TARGETARCH}.tar.gz /bar/
 
-# add stubby
-ADD stubby-${TARGETARCH}.tar.gz /bar/
-
 # add adguardhome
 COPY --from=adguardhome /opt/adguardhome/AdGuardHome /bar/usr/local/bin/
 
@@ -78,8 +75,6 @@ RUN \
         libevent-2.1-7 \
         libexpat1 \
         libnghttp2-14 \
-        `# stubby` \
-        libyaml-0-2 \
     && \
     echo "**** cleanup ****" && \
     rm -rf \
@@ -94,13 +89,6 @@ COPY --from=collector /bar/ /
 ENV \
     S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
     TZ=Asia/Seoul \
-    STUBBY_ENABLED=0 \
-    STUBBY_CONFIG=/usr/local/etc/stubby/stubby.yml \
-    STUBBY_LOG_LEVEL=GETDNS_LOG_NOTICE \
-    STUBBY_EDNS_CLIENT_SUBNET_PRIVATE=1 \
-    STUBBY_IDLE_TIMEOUT=9000 \
-    STUBBY_PORT=8053 \
-    STUBBY_UPSTREAMS="1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com" \
     UNBOUND_ENABLED=0 \
     UNBOUND_CONFIG=/usr/local/etc/unbound/unbound.conf \
     UNBOUND_VERBOSITY=0 \

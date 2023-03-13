@@ -17,13 +17,7 @@ done
 rm -f "${UNBOUND_CONFIG}"
 envsubst < "/defaults/unbound.conf" > "${UNBOUND_CONFIG}"
 
-if [ "${STUBBY_ENABLED}" -eq 1 ]; then
-    cat <<EOT >> "${UNBOUND_CONFIG}"
-forward-zone:
-    name: "."
-    forward-addr: 127.0.0.1@${STUBBY_PORT}
-EOT
-elif [ -n "${UNBOUND_UPSTREAMS:-}" ]; then
+if [ -n "${UNBOUND_UPSTREAMS:-}" ]; then
     echo "*** unbound upstreams: $UNBOUND_UPSTREAMS"
     cat <<EOT >> "${UNBOUND_CONFIG}"
 forward-zone:

@@ -25,6 +25,9 @@ COPY --from=adguardhome /opt/adguardhome/AdGuardHome /bar/usr/local/bin/
 # add adguardhome-sync
 COPY --from=ghcr.io/bakito/adguardhome-sync:latest /opt/go/adguardhome-sync /bar/usr/local/bin/
 
+# add cloudflared
+ADD https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-${TARGETARCH} /bar/usr/local/bin/cloudflared
+
 # add local files
 COPY root/ /bar/
 

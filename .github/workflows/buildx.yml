@@ -22,16 +22,21 @@ jobs:
       -
         name: Check if buildx required
         run: |
-          if [ $GITHUB_EVENT_NAME = "schedule" ]; then
-            docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc adguard/adguardhome:${{ matrix.build }} \
-              /opt/adguardhome/AdGuardHome /abc/agh1
-            docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
-              /usr/local/bin/AdGuardHome /abc/agh2
-            if cmp -s agh1 agh2 ; then X_SKIP=true ; else X_SKIP=false ; fi
-          else
-            X_SKIP=false
+          if [ $GITHUB_EVENT_NAME != "schedule" ]; then
+            echo "X_SKIP=false" >> $GITHUB_ENV
+            exit 0
           fi
-          echo "X_SKIP=$X_SKIP" >> $GITHUB_ENV
+          docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc adguard/adguardhome:${{ matrix.build }} \
+            /opt/adguardhome/AdGuardHome /abc/bin1
+          docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
+            /usr/local/bin/AdGuardHome /abc/bin2
+          if ! cmp -s bin1 bin2 ; then echo "X_SKIP=false" >> $GITHUB_ENV ; exit 0 ; fi
+          sudo curl -fsLJ https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+            -o ./bin1
+          docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
+            /usr/local/bin/cloudflared /abc/bin2
+          if ! cmp -s bin1 bin2 ; then echo "X_SKIP=false" >> $GITHUB_ENV ; exit 0 ; fi
+          echo "X_SKIP=true" >> $GITHUB_ENV
       -
         name: Checkout
         if: env.X_SKIP == 'false'

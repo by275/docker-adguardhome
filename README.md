@@ -168,4 +168,4 @@ Stubby Upstreams:
 |    Uncached Name | 0.003 | 0.128 | 0.374 | 0.100 | 100.0 |
 |    DotCom Lookup | 0.017 | 0.221 | 0.429 | 0.125 | 100.0 |
 
->> There's no reason to use Stubby as an additional TLS forwarder.
+> There's no reason to use Stubby as an additional TLS forwarder.

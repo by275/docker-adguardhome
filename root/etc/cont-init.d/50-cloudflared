@@ -1,7 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-if [ -z "${TUNNEL_TOKEN}" ]; then
-    exit 0
-fi
-
-echo "*** $(cloudflared --version) ready!"

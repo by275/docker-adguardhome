@@ -31,11 +31,6 @@ jobs:
           docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
             /usr/local/bin/AdGuardHome /abc/bin2
           if ! cmp -s bin1 bin2 ; then echo "X_SKIP=false" >> $GITHUB_ENV ; exit 0 ; fi
-          sudo curl -fsLJ https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
-            -o ./bin1
-          docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
-            /usr/local/bin/cloudflared /abc/bin2
-          if ! cmp -s bin1 bin2 ; then echo "X_SKIP=false" >> $GITHUB_ENV ; exit 0 ; fi
           echo "X_SKIP=true" >> $GITHUB_ENV
       -
         name: Checkout

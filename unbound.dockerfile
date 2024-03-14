@@ -6,7 +6,7 @@ ARG ARCH=amd64
 ENV \
     ARCH=${ARCH} \
     OPENSSL_TAG=openssl-3.2.1 \
-    UNBOUND_TAG=release-1.19.1 \
+    UNBOUND_TAG=release-1.19.3 \
     DEBIAN_FRONTEND=noninteractive
 
 # 

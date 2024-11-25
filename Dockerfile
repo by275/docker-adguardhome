@@ -1,5 +1,5 @@
 ARG UBUNTU_VER=24.04
-ARG AGH_BUILD
+ARG AGH_BUILD=latest
 
 FROM ghcr.io/by275/base:ubuntu${UBUNTU_VER} AS base
 FROM ghcr.io/by275/base:ubuntu AS prebuilt
@@ -59,7 +59,7 @@ RUN \
 # 
 FROM base
 LABEL maintainer="by275"
-LABEL org.opencontainers.image.source https://github.com/by275/docker-adguardhome
+LABEL org.opencontainers.image.source=https://github.com/by275/docker-adguardhome
 
 ARG DEBIAN_FRONTEND=noninteractive
 

@@ -17,7 +17,7 @@ COPY --from=prebuilt /s6/ /bar/
 ADD https://raw.githubusercontent.com/by275/docker-base/main/_/etc/cont-init.d/adduser /bar/etc/cont-init.d/10-adduser
 
 # add unbound
-ADD unbound-${TARGETARCH}.tar.gz /bar/
+ADD unbound/${TARGETARCH}/ /bar/
 
 # add adguardhome
 COPY --from=adguardhome /opt/adguardhome/AdGuardHome /bar/usr/local/bin/

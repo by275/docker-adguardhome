@@ -53,12 +53,12 @@ jobs:
           docker buildx build \
             -f unbound.dockerfile \
             --build-arg ARCH=amd64 \
-            --output=type=tar,dest=unbound-amd64.tar.gz \
+            --output=type=local,dest=./unbound/amd64 \
             .
           docker buildx build \
             -f unbound.dockerfile \
             --build-arg ARCH=arm64 \
-            --output=type=tar,dest=unbound-arm64.tar.gz \
+            --output=type=local,dest=./unbound/arm64 \
             .
       -
         name: Initial Buildx

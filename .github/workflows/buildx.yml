@@ -10,6 +10,8 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/by275/adguardhome
+  X_SKIP: "true"
+  APP_VER: unknown
 
 jobs:
   buildx:
@@ -32,8 +34,7 @@ jobs:
             /opt/adguardhome/AdGuardHome > bin1
           docker run --rm --entrypoint=cat ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
             /usr/local/bin/AdGuardHome > bin2
-          if ! cmp -s bin1 bin2 ; then echo "X_SKIP=false" >> $GITHUB_ENV ; exit 0 ; fi
-          echo "X_SKIP=true" >> $GITHUB_ENV
+          if ! cmp -s bin1 bin2 ; then echo "X_SKIP=false" >> $GITHUB_ENV ; fi
       -
         name: Checkout
         if: env.X_SKIP == 'false'

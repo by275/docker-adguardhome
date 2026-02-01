@@ -28,10 +28,10 @@ jobs:
             echo "X_SKIP=false" >> $GITHUB_ENV
             exit 0
           fi
-          docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc adguard/adguardhome:${{ matrix.build }} \
-            /opt/adguardhome/AdGuardHome /abc/bin1
-          docker run -i --entrypoint=/bin/cp -v ${PWD}:/abc ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
-            /usr/local/bin/AdGuardHome /abc/bin2
+          docker run --rm --entrypoint=cat adguard/adguardhome:${{ matrix.build }} \
+            /opt/adguardhome/AdGuardHome > bin1
+          docker run --rm --entrypoint=cat ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
+            /usr/local/bin/AdGuardHome > bin2
           if ! cmp -s bin1 bin2 ; then echo "X_SKIP=false" >> $GITHUB_ENV ; exit 0 ; fi
           echo "X_SKIP=true" >> $GITHUB_ENV
       -

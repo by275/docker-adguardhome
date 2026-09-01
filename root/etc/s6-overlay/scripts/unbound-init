@@ -45,3 +45,42 @@ printf "%s" $rr_cache_size > /var/run/s6/container_environment/UNBOUND_RR_CACHE_
 [ "${AGH_ENABLED}" -eq 1 ] && \
     printf 5053 > /var/run/s6/container_environment/UNBOUND_PORT || \
     printf 53 > /var/run/s6/container_environment/UNBOUND_PORT
+
+mkdir -p /config/unbound.conf.d
+
+for srcfile in /defaults/unbound.conf.d/*; do
+    trgfile="/config/unbound.conf.d/$(basename "$srcfile")"
+    if [ ! -f "$trgfile" ]; then
+        cp "$srcfile" "$trgfile"
+    fi
+done
+
+rm -f "${UNBOUND_CONFIG}"
+envsubst < "/defaults/unbound.conf" > "${UNBOUND_CONFIG}"
+
+if [ -n "${UNBOUND_UPSTREAMS:-}" ]; then
+    echo "*** unbound upstreams: $UNBOUND_UPSTREAMS"
+    cat <<EOT >> "${UNBOUND_CONFIG}"
+forward-zone:
+    name: "."
+    forward-tls-upstream: yes
+EOT
+    IFS=" " read -r -a upstreams <<< "$UNBOUND_UPSTREAMS"
+    for upstream in "${upstreams[@]}"; do
+        echo "    forward-addr: $upstream" >> "${UNBOUND_CONFIG}"
+    done
+fi
+
+# root.hints
+curl -o /usr/local/etc/unbound/root.hints \
+    -fsS https://www.internic.net/domain/named.root
+
+# trust anchor
+unbound-anchor -a /usr/local/etc/unbound/root.key
+
+# permissions
+chown -R abc:abc \
+    /usr/local/etc/unbound \
+    /config/unbound.conf.d
+
+echo "*** unbound $(unbound -V | head -1 | cut -d' ' -f2) ready!"

@@ -48,19 +48,33 @@ jobs:
         if: env.X_SKIP == 'false'
         uses: docker/setup-buildx-action@v4
       -
-        name: Build Unbound
+        name: Build Unbound (amd64)
         if: env.X_SKIP == 'false'
-        run: |
-          docker buildx build \
-            -f unbound.dockerfile \
-            --build-arg ARCH=amd64 \
-            --output=type=local,dest=./unbound/amd64 \
-            .
-          docker buildx build \
-            -f unbound.dockerfile \
-            --build-arg ARCH=arm64 \
-            --output=type=local,dest=./unbound/arm64 \
-            .
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: unbound.dockerfile
+          build-args: |
+            ARCH=amd64
+          outputs: type=local,dest=./unbound/amd64
+          cache-from: type=gha,scope=adguardhome-unbound-${{ matrix.build }}-amd64
+          cache-to: type=gha,mode=max,scope=adguardhome-unbound-${{ matrix.build }}-amd64,ignore-error=true
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
+      -
+        name: Build Unbound (arm64)
+        if: env.X_SKIP == 'false'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: unbound.dockerfile
+          build-args: |
+            ARCH=arm64
+          outputs: type=local,dest=./unbound/arm64
+          cache-from: type=gha,scope=adguardhome-unbound-${{ matrix.build }}-arm64
+          cache-to: type=gha,mode=max,scope=adguardhome-unbound-${{ matrix.build }}-arm64,ignore-error=true
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
       -
         name: Initial Buildx
         if: env.X_SKIP == 'false'
@@ -72,16 +86,25 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |
             AGH_BUILD=${{ matrix.build }}
+          cache-from: type=gha,scope=adguardhome-${{ matrix.build }}
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
       -
-        name: Load Built Image and Get Variables
+        name: Load Built Image
+        if: env.X_SKIP == 'false'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile
+          tags: ${{ env.IMAGE_NAME }}:testing
+          platforms: linux/amd64
+          build-args: |
+            AGH_BUILD=${{ matrix.build }}
+          load: true
+      -
+        name: Get Variables
         if: env.X_SKIP == 'false'
         run: |
-          docker buildx build \
-            -t ${{ env.IMAGE_NAME }}:testing \
-            --platform=linux/amd64 \
-            --build-arg AGH_BUILD=${{ matrix.build }} \
-            --load \
-            .
           CID=$(docker run -d ${{ env.IMAGE_NAME }}:testing)
           VER=$(docker exec $CID AdGuardHome --version | awk '{print $NF}' | cut -d'+' -f1)
           docker rm -f $CID
@@ -107,6 +130,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |
             AGH_BUILD=${{ matrix.build }}
+          cache-to: type=gha,mode=max,scope=adguardhome-${{ matrix.build }},ignore-error=true
           push: true
       -
         name: Notification

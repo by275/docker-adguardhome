@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv bash
 
 if [ "${UNBOUND_ENABLED}" -ne 1 ]; then
-    rm -f /var/run/service/unbound/notification-fd
+    rm -f /var/run/service/svc-unbound/notification-fd
     exit 0
 fi
 

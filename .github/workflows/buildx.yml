@@ -11,30 +11,42 @@ on:
 env:
   IMAGE_NAME: ghcr.io/by275/adguardhome
   X_SKIP: "true"
-  APP_VER: unknown
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   buildx:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       packages: write
     strategy:
       fail-fast: false
       matrix:
         build: [latest, beta]
+    concurrency:
+      group: buildx-${{ github.ref }}-${{ matrix.build }}
+      cancel-in-progress: true
     steps:
       -
         name: Check if buildx required
         run: |
-          if [ $GITHUB_EVENT_NAME != "schedule" ]; then
-            echo "X_SKIP=false" >> $GITHUB_ENV
+          set -uo pipefail
+
+          if [[ "$GITHUB_EVENT_NAME" != "schedule" ]]; then
+            echo "X_SKIP=false" >> "$GITHUB_ENV"
             exit 0
           fi
-          docker run --rm --entrypoint=cat adguard/adguardhome:${{ matrix.build }} \
-            /opt/adguardhome/AdGuardHome > bin1
-          docker run --rm --entrypoint=cat ${{ env.IMAGE_NAME }}:${{ matrix.build }} \
-            /usr/local/bin/AdGuardHome > bin2
-          if ! cmp -s bin1 bin2 ; then echo "X_SKIP=false" >> $GITHUB_ENV ; fi
+
+          if ! docker run --rm --entrypoint=cat "adguard/adguardhome:${{ matrix.build }}" \
+            /opt/adguardhome/AdGuardHome > bin1 || \
+             ! docker run --rm --entrypoint=cat "${IMAGE_NAME}:${{ matrix.build }}" \
+            /usr/local/bin/AdGuardHome > bin2 || \
+             ! cmp -s bin1 bin2; then
+            echo "X_SKIP=false" >> "$GITHUB_ENV"
+          fi
       -
         name: Checkout
         if: env.X_SKIP == 'false'
@@ -76,40 +88,6 @@ jobs:
           pull: true
           no-cache: ${{ github.event_name == 'schedule' }}
       -
-        name: Initial Buildx
-        if: env.X_SKIP == 'false'
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: Dockerfile
-          tags: ${{ env.IMAGE_NAME }}:testing
-          platforms: linux/amd64,linux/arm64
-          build-args: |
-            AGH_BUILD=${{ matrix.build }}
-          cache-from: type=gha,scope=adguardhome-${{ matrix.build }}
-          pull: true
-          no-cache: ${{ github.event_name == 'schedule' }}
-      -
-        name: Load Built Image
-        if: env.X_SKIP == 'false'
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: Dockerfile
-          tags: ${{ env.IMAGE_NAME }}:testing
-          platforms: linux/amd64
-          build-args: |
-            AGH_BUILD=${{ matrix.build }}
-          load: true
-      -
-        name: Get Variables
-        if: env.X_SKIP == 'false'
-        run: |
-          CID=$(docker run -d ${{ env.IMAGE_NAME }}:testing)
-          VER=$(docker exec $CID AdGuardHome --version | awk '{print $NF}' | cut -d'+' -f1)
-          docker rm -f $CID
-          echo "APP_VER=$VER" >> $GITHUB_ENV
-      -
         name: Login to ghcr.io
         if: env.X_SKIP == 'false'
         uses: docker/login-action@v4
@@ -120,18 +98,52 @@ jobs:
       -
         name: Buildx and Push
         if: env.X_SKIP == 'false'
+        id: image
         uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile
-          tags: |
-            ${{ env.IMAGE_NAME }}:${{ matrix.build }}
-            ${{ env.IMAGE_NAME }}:${{ env.APP_VER }}
+          tags: ${{ env.IMAGE_NAME }}:${{ matrix.build }}
           platforms: linux/amd64,linux/arm64
           build-args: |
             AGH_BUILD=${{ matrix.build }}
+          cache-from: type=gha,scope=adguardhome-${{ matrix.build }}
           cache-to: type=gha,mode=max,scope=adguardhome-${{ matrix.build }},ignore-error=true
+          pull: true
+          no-cache: ${{ github.event_name == 'schedule' }}
           push: true
+      -
+        name: Check image version and promote version tag
+        if: env.X_SKIP == 'false'
+        id: version
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$IMAGE_DIGEST" ]]; then
+            echo "The build did not produce an image digest." >&2
+            exit 1
+          fi
+
+          image="${IMAGE_NAME}@${IMAGE_DIGEST}"
+          docker pull --platform linux/amd64 "$image"
+          version="$({
+            docker run --rm --platform linux/amd64 \
+              --entrypoint /usr/local/bin/AdGuardHome \
+              "$image" --version
+          } | awk '{print $NF}' | cut -d'+' -f1)"
+
+          if [[ ! "$version" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "Invalid image version: ${version:-empty}" >&2
+            exit 1
+          fi
+
+          echo "Detected AdGuardHome version: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          docker buildx imagetools create \
+            --tag "${IMAGE_NAME}:${version}" \
+            "${image}"
       -
         name: Notification
         uses: sarisia/actions-status-discord@v1
@@ -141,4 +153,4 @@ jobs:
           status: ${{ job.status }}
           description: |
             ${{ env.IMAGE_NAME }}:${{ matrix.build }}
-            ${{ env.IMAGE_NAME }}:${{ env.APP_VER }}
+            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version || 'unknown' }}

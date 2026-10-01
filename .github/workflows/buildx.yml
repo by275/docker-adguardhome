@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build: [latest, beta]
+        build: [latest, beta, edge]
     concurrency:
       group: buildx-${{ github.ref }}-${{ matrix.build }}
       cancel-in-progress: true

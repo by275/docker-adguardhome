@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS base
+FROM ubuntu:26.04 AS base
 
 # amd64 / arm64 / armhf
 ARG ARCH=amd64
@@ -34,6 +34,7 @@ RUN \
     apt-get update -qq && \
     apt-get upgrade -qq && \
     apt-get install -yqq --no-install-recommends \
+        build-essential \
         ca-certificates \
         curl \
         git
